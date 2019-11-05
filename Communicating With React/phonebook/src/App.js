@@ -1,9 +1,12 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+import axios from 'axios';
 import Filter from './components/Filter';
 import List from './components/List';
 import AddItem from './components/AddItem';
 
 const App = () => {
+        const [notes, setNotes] = useState([]);
+
     const [persons,
         setPersons] = useState([
         {
@@ -24,12 +27,27 @@ const App = () => {
         setNewName] = useState('');
 
     const [newNumber,
-        setNewNumber] = useState('');
+        setNewNumber] = useState('');   
 
+    const [search,
+        setSearch] = useState('');
         
-    const [search, setSearch] = useState('');
 
-    //const rows = () => persons.map(person => <Person key={person.name} person={person}/>)
+    // const rows = () => persons.map(person => <Person key={person.name}
+    // person={person}/>)
+
+    useEffect( ()=>{
+        console.log('effect');
+        axios.get('http://localhost:3001/notes')
+        .then(response => {
+            console.log('promise fulfilled');
+            setNotes(response.data)
+            
+        })
+        
+    },[])
+    console.log('render', notes.length, 'notes');
+    
 
     const addName = (e) => {
         //console.log("Button clicked", e.target);
@@ -57,11 +75,10 @@ const App = () => {
     }
 
     const filterPersons = () => {
-      if(search === "")
-      {
-        return persons
-      }
-      return [...persons].filter(person=> person.name.toLowerCase().indexOf(search.toLowerCase()) !== -1 )
+        if (search === "") {
+            return persons
+        }
+        return [...persons].filter(person => person.name.toLowerCase().indexOf(search.toLowerCase()) !== -1)
     }
 
     const handleNameChange = (e) => {
@@ -75,26 +92,24 @@ const App = () => {
         setNewNumber(e.target.value);
     };
 
-       const handleSearch = e => {
-         //console.log(e.target.value);
-         setSearch(e.target.value);
-       };
+    const handleSearch = e => {
+        //console.log(e.target.value);
+        setSearch(e.target.value);
+    };
     return (
-      <div>
-        <h2>Phonebook</h2>
-        <Filter onChange={handleSearch} inputValue={search} />
+        <div>
+            <h2>Phonebook</h2>
+            <Filter onChange={handleSearch} inputValue={search}/>
 
-        <AddItem
-          formSubmit={addName}
-          onNameInputChange={handleNameChange}
-          onNumberInputChange={handleNumberChange}
-          newName={newName}
-          newNumber={newNumber}
-        />
-        
+            <AddItem
+                formSubmit={addName}
+                onNameInputChange={handleNameChange}
+                onNumberInputChange={handleNumberChange}
+                newName={newName}
+                newNumber={newNumber}/>
 
-        <List list={filterPersons()} />
-      </div>
+            <List list={filterPersons()}/>
+        </div>
     );
 };
 
