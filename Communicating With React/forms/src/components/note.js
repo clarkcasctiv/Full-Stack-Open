@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react';
 
 const Note = ({ note }) => <li>{note.content}</li>;
 
