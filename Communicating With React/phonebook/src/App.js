@@ -5,52 +5,35 @@ import List from './components/List';
 import AddItem from './components/AddItem';
 
 const App = () => {
-        const [notes, setNotes] = useState([]);
 
     const [persons,
-        setPersons] = useState([
-        {
-            name: 'Arto Hellas',
-            number: '040-123456'
-        }, {
-            name: 'Ada Lovelace',
-            number: '39-44-5323523'
-        }, {
-            name: 'Dan Abramov',
-            number: '12-43-234345'
-        }, {
-            name: 'Mary Poppendieck',
-            number: '39-23-6423122'
-        }
-    ]);
+        setPersons] = useState([]);
+
     const [newName,
         setNewName] = useState('');
 
     const [newNumber,
-        setNewNumber] = useState('');   
+        setNewNumber] = useState('');
 
     const [search,
         setSearch] = useState('');
-        
 
     // const rows = () => persons.map(person => <Person key={person.name}
     // person={person}/>)
 
-    useEffect( ()=>{
-        console.log('effect');
-        axios.get('http://localhost:3001/notes')
-        .then(response => {
-            console.log('promise fulfilled');
-            setNotes(response.data)
-            
-        })
-        
-    },[])
-    console.log('render', notes.length, 'notes');
-    
+    useEffect(() => {
+        axios
+            .get('http://localhost:3001/persons')
+            .then(response => {
+                setPersons(response.data)
+
+            })
+
+    }, [])
+
+    // const hook = () => { } useEffect(hook,[])
 
     const addName = (e) => {
-        //console.log("Button clicked", e.target);
 
         e.preventDefault();
 
@@ -82,18 +65,15 @@ const App = () => {
     }
 
     const handleNameChange = (e) => {
-        //console.log(e.target.value);
         setNewName(e.target.value)
 
     }
 
     const handleNumberChange = (e) => {
-        //console.log(e.target.value);
         setNewNumber(e.target.value);
     };
 
     const handleSearch = e => {
-        //console.log(e.target.value);
         setSearch(e.target.value);
     };
     return (
