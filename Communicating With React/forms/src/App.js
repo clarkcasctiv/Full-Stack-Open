@@ -1,53 +1,97 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Note from './components/note';
+import noteService from './services/index';
 const App = (props) => {
 
-  const [notes, setNotes] = useState(props.notes)
+    const [notes,
+        setNotes] = useState([])
 
-  const [newNote, setNewNote] = useState('a new note')
+    const [newNote,
+        setNewNote] = useState('a new note')
 
-  const [showAll, setShowAll] = useState(true)
+    const [showAll,
+        setShowAll] = useState(true)
 
-  const rows = () => noteToShow.map(note=> <Note key={note.id} note={note}/>)
+    const rows = () => noteToShow.map(note => <Note
+        key={note.id}
+        note={note}
+        toggleImportance={() => toggleImportance(note.id)}/>)
 
-  const noteToShow = showAll ? notes : notes.filter(note => note.important === true)
+    const noteToShow = showAll
+        ? notes
+        : notes.filter(note => note.important === true)
 
-  const addNote = (e) => {
-
-    e.preventDefault()
-    console.log("Button Clicked", e.target);
-    const noteObject = {
-      content: newNote,
-      date: new Date().toISOString(),
-      important: Math.random() > 0.5,
-      id: notes.length +1
+    const hook = () => {
+        noteService
+            .getAll()
+            .then(initialNotes => {
+                setNotes(initialNotes);
+            })
     }
 
-    setNotes(notes.concat(noteObject))
-    setNewNote('')
-    
-  }
+    useEffect(hook, []);
 
-  const handleNoteChange = (e) => {
-console.log(e.target.value);
-setNewNote(e.target.value)
+    const addNote = (e) => {
 
-  }
-  return (
-    <div>
-      <h1>Notes</h1>
-      <button onClick={() => {setShowAll(!showAll)}}>Show {showAll ? 'important' : 'all'}</button>
+        e.preventDefault()
+        const noteObject = {
+            content: newNote,
+            date: new Date().toISOString(),
+            important: Math.random() > 0.5,
+            id: notes.length + 1
+        }
 
-      <ul>
-        {rows()}
-      </ul>
+        noteService
+            .create(noteObject)
+            .then(returnedNote => {
+                setNotes(notes.concat(returnedNote));
+                setNewNote('');
+            })
+    }
 
-      <form onSubmit={addNote}>
-        <input value={newNote} onChange={handleNoteChange}/>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
-  )
+    const handleNoteChange = (e) => {
+        setNewNote(e.target.value)
+    }
+
+    const toggleImportance = (id) => {
+        const note = notes.find(n => n.id === id);
+        const changedNote = {
+            ...note,
+            important: !note.important
+        }
+
+        noteService
+            .update(id, changedNote)
+            .then(returnedNote => {
+                setNotes(notes.map(note => (note.id !== id
+                    ? note
+                    : returnedNote)));
+            })
+            .catch(error => {
+              alert(`Note ${note.content} was already deleted`)
+              setNotes(notes.filter(n => n.id !== id))
+            })
+    }
+
+    return (
+        <div>
+            <h1>Notes</h1>
+            <button onClick={() => {
+                setShowAll(!showAll)
+            }}>Show {showAll
+                    ? 'important'
+                    : 'all'}</button>
+
+            <ul>
+                {rows()}
+            </ul>
+
+            <form onSubmit={addNote}>
+                <input value={newNote} onChange={handleNoteChange}/>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    )
 }
 
 export default App;
