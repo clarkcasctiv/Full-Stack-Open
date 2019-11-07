@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
-import axios from 'axios';
 import Filter from './components/Filter';
 import List from './components/List';
 import AddItem from './components/AddItem';
+import personService from './services/index'
 
 const App = () => {
 
@@ -22,10 +22,10 @@ const App = () => {
     // person={person}/>)
 
     useEffect(() => {
-        axios
-            .get('http://localhost:3001/persons')
-            .then(response => {
-                setPersons(response.data)
+        personService
+            .getAll()
+            .then(initialPersons => {
+                setPersons(initialPersons);
 
             })
 
@@ -52,9 +52,14 @@ const App = () => {
             return;
         }
 
-        setPersons(persons.concat(personObject));
-        setNewName('');
-        setNewNumber('')
+        personService
+            .create(personObject)
+            .then(returnedPerson => {
+                setPersons(persons.concat(returnedPerson));
+                setNewName('');
+                setNewNumber('');
+            })
+
     }
 
     const filterPersons = () => {
@@ -63,6 +68,18 @@ const App = () => {
         }
         return [...persons].filter(person => person.name.toLowerCase().indexOf(search.toLowerCase()) !== -1)
     }
+
+    const deleteItem = (id) => {
+
+        const Person = persons.find(n => n.id === id)
+        const changedPerson = {...persons}
+
+        personService.deletePerson(id, changedPerson)
+        .then(returnedPerson => setPersons(returnedPerson))
+
+    }
+
+
 
     const handleNameChange = (e) => {
         setNewName(e.target.value)
