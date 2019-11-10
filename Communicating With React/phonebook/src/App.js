@@ -18,9 +18,6 @@ const App = () => {
     const [search,
         setSearch] = useState('');
 
-    // const rows = () => persons.map(person => <Person key={person.name}
-    // person={person}/>)
-
     useEffect(() => {
         personService
             .getAll()
@@ -37,20 +34,47 @@ const App = () => {
 
         e.preventDefault();
 
+        if (persons.some(person => person.name === newName)) {
+
+            if (window.confirm(`Confirm Replace ?`)) {
+                const person = persons.find(person => person.name === newName);
+
+                let newPerson = {
+                    ...person,
+                    number: newNumber
+                }
+                setNewName('');
+                setNewNumber('');
+                personService
+                    .updatePerson(person.id, newPerson)
+                    .then(returnedPerson => {
+                        setPersons(persons.map(n => n.id !== person.id
+                            ? person
+                            : returnedPerson));
+                    }).catch(error =>{
+                        alert(`${person.id} was already deleted`);
+                    })
+                    
+
+                setNewName('');
+                setNewNumber('');
+            } else {
+                setNewName('');
+                setNewNumber('');
+                return
+            }
+
+        }
+
+        // if (persons.some(person => person.number === newNumber)) {
+        //     alert(`${newNumber} already exists`);
+        //     return;
+        // }
+
         const personObject = {
             name: newName,
             number: newNumber
-        }
-
-        if (persons.some(person => person.name === newName)) {
-            alert(`${newName} already exists`)
-            return
-        }
-
-        if (persons.some(person => person.number === newNumber)) {
-            alert(`${newNumber} already exists`);
-            return;
-        }
+        };
 
         personService
             .create(personObject)
@@ -71,15 +95,20 @@ const App = () => {
 
     const deleteItem = (id) => {
 
-        const Person = persons.find(n => n.id === id)
-        const changedPerson = {...persons}
+        const person = persons.find(n => n.id === id)
 
-        personService.deletePerson(id, changedPerson)
-        .then(returnedPerson => setPersons(returnedPerson))
+        if (!window.confirm(`Confirm Delete ${person.name} ?`)) {
+            return;
+        }
+
+        personService
+            .deletePerson(id)
+            .then(() => setPersons(persons.filter(person => person.id !== id)))
+            .catch(error => {
+                alert(`${person.id} was already deleted`);
+            })
 
     }
-
-
 
     const handleNameChange = (e) => {
         setNewName(e.target.value)
@@ -105,7 +134,7 @@ const App = () => {
                 newName={newName}
                 newNumber={newNumber}/>
 
-            <List list={filterPersons()}/>
+            <List list={filterPersons()} deleteItem={deleteItem}/>
         </div>
     );
 };
