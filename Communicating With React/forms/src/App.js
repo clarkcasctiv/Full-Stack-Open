@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import Note from './components/note';
 import noteService from './services/index';
+import Notification from './components/Notification';
+import Footer from './components/Footer'
 const App = (props) => {
 
     const [notes,
@@ -11,6 +13,8 @@ const App = (props) => {
 
     const [showAll,
         setShowAll] = useState(true)
+
+        const [errorMessage, setErrorMessage] = useState(null)
 
     const rows = () => noteToShow.map(note => <Note
         key={note.id}
@@ -37,8 +41,7 @@ const App = (props) => {
         const noteObject = {
             content: newNote,
             date: new Date().toISOString(),
-            important: Math.random() > 0.5,
-            id: notes.length + 1
+            important: Math.random() > 0.5
         }
 
         noteService
@@ -68,7 +71,10 @@ const App = (props) => {
                     : returnedNote)));
             })
             .catch(error => {
-              alert(`Note ${note.content} was already deleted`)
+                setErrorMessage(`Note ${note.content} was already deleted`)
+                setTimeout(() => {
+                  setErrorMessage(null);
+                }, 5000);
               setNotes(notes.filter(n => n.id !== id))
             })
     }
@@ -76,6 +82,7 @@ const App = (props) => {
     return (
         <div>
             <h1>Notes</h1>
+            <Notification message={errorMessage}/>
             <button onClick={() => {
                 setShowAll(!showAll)
             }}>Show {showAll
@@ -90,6 +97,7 @@ const App = (props) => {
                 <input value={newNote} onChange={handleNoteChange}/>
                 <button type="submit">Submit</button>
             </form>
+            <Footer/>
         </div>
     )
 }
